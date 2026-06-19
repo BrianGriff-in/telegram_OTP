@@ -1,0 +1,22 @@
+{% extends "core/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="bg-white border rounded-3 p-4 p-md-5" style="border-color:#eef0f4;">
+                <h1 class="h3 mb-2">Welcome, {{ user.username }} 👋</h1>
+                <p class="text-muted mb-4">You're logged in. Login codes for this account go to your linked Telegram chat.</p>
+
+                <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:#eef2ff;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.6"><path d="M21.5 4.5L2.5 12l7 2.5m12-10l-3 14.5-9-7m12-7.5l-9 7.5"/></svg>
+                    <div>
+                        <div class="fw-semibold">Telegram linked</div>
+                        <div class="text-muted small">@{{ user.profile.telegram_username|default:"connected" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
