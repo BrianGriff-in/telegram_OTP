@@ -63,7 +63,7 @@ python manage.py set_telegram_webhook   # in another, after editing .env
 In production, set `SITE_URL` to your real domain (e.g.
 `https://yourapp.com`) and re-run `set_telegram_webhook` once, after deploy.
 
-## 4. Try it
+## 4. Try it locally
 
 1. Visit `/signup/`, create an account.
 2. You'll land on `/link-telegram/` — tap "Open Telegram to link", hit
@@ -71,6 +71,44 @@ In production, set `SITE_URL` to your real domain (e.g.
 3. The page auto-redirects to the dashboard once linked.
 4. Log out, log back in at `/login/` — you'll be sent to `/verify-otp/` and
    receive a code in Telegram.
+
+## 5. Deploying on Render
+
+This repo is ready for Render's web service deploy. In the Render dashboard:
+
+**Build Command:**
+```bash
+pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+```
+
+**Start Command:**
+```bash
+gunicorn otplogin.wsgi:application
+```
+
+No `.env` file is used in production — Render injects environment variables
+directly. Add these under your service's **Environment** tab:
+
+```
+DJANGO_SECRET_KEY=...
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=your-app-name.onrender.com
+DATABASE_URL=postgresql://postgres.xxxx:[email protected]:5432/postgres
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_BOT_USERNAME=...
+SITE_URL=https://your-app-name.onrender.com
+TELEGRAM_WEBHOOK_SECRET=...
+```
+
+Notes:
+- If your Supabase password contains special characters (`@`, `$`, `&`, `#`,
+  etc.), URL-encode them in `DATABASE_URL` (e.g. `@` → `%40`).
+- Once deployed and you have your real `.onrender.com` URL, register the
+  Telegram webhook once (via Render's **Shell** tab, or locally with
+  `SITE_URL` temporarily pointed at the Render domain):
+  ```bash
+  python manage.py set_telegram_webhook
+  ```
 
 ## Project layout
 
@@ -105,6 +143,9 @@ otplogin/
 
 - Set `DJANGO_DEBUG=False`.
 - Set `DJANGO_ALLOWED_HOSTS` to your real domain.
-- Put a real `DJANGO_SECRET_KEY` in production env vars (not in `.env` committed to git).
+- Put a real `DJANGO_SECRET_KEY` in production env vars (not in a committed file).
+- `gunicorn` and `whitenoise` are already in `requirements.txt` and wired into
+  `settings.py` for production use.
 - Add a rate limit on `/login/` (e.g. django-ratelimit) to slow down brute-force attempts on the password step.
 - Consider adding HTTPS-only cookies (`SESSION_COOKIE_SECURE = True`, `CSRF_COOKIE_SECURE = True`) once you're on HTTPS.
+- Rotate any password you've pasted into a chat, doc, or screenshot during setup.
